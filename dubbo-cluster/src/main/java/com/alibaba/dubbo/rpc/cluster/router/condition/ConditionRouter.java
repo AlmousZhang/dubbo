@@ -53,9 +53,11 @@ public class ConditionRouter extends AbstractRouter {
 
     public ConditionRouter(URL url) {
         this.url = url;
+        // 获取 priority 和 force 配置
         this.priority = url.getParameter(Constants.PRIORITY_KEY, DEFAULT_PRIORITY);
         this.force = url.getParameter(Constants.FORCE_KEY, false);
         try {
+            // 获取路由规则
             String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
             if (rule == null || rule.trim().length() == 0) {
                 throw new IllegalArgumentException("Illegal route rule!");
@@ -67,6 +69,7 @@ public class ConditionRouter extends AbstractRouter {
             Map<String, MatchPair> when = StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<String, MatchPair>() : parseRule(whenRule);
             Map<String, MatchPair> then = StringUtils.isBlank(thenRule) || "false".equals(thenRule) ? null : parseRule(thenRule);
             // NOTE: It should be determined on the business level whether the `When condition` can be empty or not.
+            // 将解析出的匹配规则分别赋值给 whenCondition 和 thenCondition 成员变量
             this.whenCondition = when;
             this.thenCondition = then;
         } catch (ParseException e) {
@@ -84,8 +87,20 @@ public class ConditionRouter extends AbstractRouter {
         MatchPair pair = null;
         // Multiple values
         Set<String> values = null;
+        // 通过正则表达式匹配路由规则，ROUTE_PATTERN = ([&!=,]*)\s*([^&!=,\s]+)
+        // 这个表达式看起来不是很好理解，第一个括号内的表达式用于匹配"&", "!", "=" 和 "," 等符号。
+        // 第二括号内的用于匹配英文字母，数字等字符。举个例子说明一下：
+        //    host = 2.2.2.2 & host != 1.1.1.1 & method = hello
+        // 匹配结果如下：
+        //     括号一      括号二
+        // 1.  null       host
+        // 2.   =         2.2.2.2
+        // 3.   &         host
+        // 4.   !=        1.1.1.1
+        // 5.   &         method
+        // 6.   =         hello
         final Matcher matcher = ROUTE_PATTERN.matcher(rule);
-        while (matcher.find()) { // Try to match one by one
+        while (matcher.find()) {// Try to match one by one
             String separator = matcher.group(1);
             String content = matcher.group(2);
             // Start part of the condition expression.
