@@ -14,19 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.demo.provider;
+package com.alibaba.dubbo.demo;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+public interface UserService {
 
-public class Provider {
+    String queryById(String name);
 
-    public static void main(String[] args) throws Exception {
-        //Prevent to get IPV6 address,this way only work in debug mode
-        //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
-        context.start();
-        System.in.read(); // press any key to exit
-    }
+    void insert(String name);
 
 }
